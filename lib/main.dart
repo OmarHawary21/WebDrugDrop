@@ -13,7 +13,7 @@ class MainApp extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(),
         body: Container(
-          child: Text('Push Test'),
+          child: Text('Pushed Test'),
         ),
       ),
     );
