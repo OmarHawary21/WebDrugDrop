@@ -12,8 +12,8 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(),
-        body: Center(
-          child: Text('final test'),
+        body: Container(
+          child: Text('Pushed Test by taghreed'),
         ),
       ),
     );
