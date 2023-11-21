@@ -45,6 +45,7 @@ app.*.map.json
 
 .dart_tool
 .idea
+test
 build
 web
 .gitignore
