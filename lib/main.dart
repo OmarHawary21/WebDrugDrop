@@ -9,11 +9,10 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       home: Scaffold(
-        appBar: AppBar(),
         body: Center(
-          child: Text('Trying merge'),
+          child: Text('Test'),
         ),
       ),
     );
