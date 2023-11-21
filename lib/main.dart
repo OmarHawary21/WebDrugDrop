@@ -11,7 +11,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar()
+        appBar: AppBar(),
         body: Center(
           child: Text('Push Test'),
         ),
