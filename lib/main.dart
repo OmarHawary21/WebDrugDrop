@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'screens/log_in_screen.dart';
+import 'screens/add_drug_screen.dart';
 
 void main() {
   runApp(const MainApp());
@@ -39,6 +40,7 @@ class MainApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (_) => LogInScreen(),
+        AddDrugScreen.routeName: (_) => AddDrugScreen(),
       },
     );
   }

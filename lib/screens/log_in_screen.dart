@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
+import 'add_drug_screen.dart';
 import '../../widgets/logo.dart';
 import '../../widgets/olives.dart';
 
@@ -39,7 +41,7 @@ class _LogInScreenState extends State<LogInScreen> {
                     children: [
                       SizedBox(
                         height: media.size.height * 0.7,
-                        child: Image.asset('assets/images/Login.png'),
+                        child: SvgPicture.asset('assets/images/Login.svg'),
                       ),
                     ],
                   ),
@@ -68,8 +70,9 @@ class _LogInScreenState extends State<LogInScreen> {
                           ),
                         ),
                       ),
+                      SizedBox(height: media.size.height * 0.05),
                       Forms(),
-                      SizedBox(height: media.size.height * 0.025,),
+                      SizedBox(height: media.size.height * 0.05),
                       Buttons(),
                     ],
                   ),
@@ -192,7 +195,7 @@ class Buttons extends StatelessWidget {
           height: MediaQuery.of(context).size.height * 0.05,
           width: MediaQuery.of(context).size.width * 0.2,
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () => Navigator.of(context).popAndPushNamed(AddDrugScreen.routeName),
             style: ElevatedButton.styleFrom(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -204,52 +207,52 @@ class Buttons extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(
-          height: MediaQuery.of(context).size.height * 0.05,
-          child: TextButton(
-            style: TextButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            onPressed: () {},
-            child: const FittedBox(
-              child: Text(
-                'Forgot your password?',
-                style: TextStyle(
-                  decoration: TextDecoration.underline,
-                ),
-              ),
-            ),
-          ),
-        ),
-        SizedBox(
-          height: MediaQuery.of(context).size.height * 0.05,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const FittedBox(
-                child: Text('Don\'t have an account? '),
-              ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                onPressed: () {},
-                child: const FittedBox(
-                  child: Text(
-                    'Sign Up',
-                    style: TextStyle(
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+        // SizedBox(
+        //   height: MediaQuery.of(context).size.height * 0.05,
+        //   child: TextButton(
+        //     style: TextButton.styleFrom(
+        //       shape: RoundedRectangleBorder(
+        //         borderRadius: BorderRadius.circular(20),
+        //       ),
+        //     ),
+        //     onPressed: () {},
+        //     child: const FittedBox(
+        //       child: Text(
+        //         'Forgot your password?',
+        //         style: TextStyle(
+        //           decoration: TextDecoration.underline,
+        //         ),
+        //       ),
+        //     ),
+        //   ),
+        // ),
+        // SizedBox(
+        //   height: MediaQuery.of(context).size.height * 0.05,
+        //   child: Row(
+        //     mainAxisAlignment: MainAxisAlignment.center,
+        //     children: [
+        //       const FittedBox(
+        //         child: Text('Don\'t have an account? '),
+        //       ),
+        //       TextButton(
+        //         style: TextButton.styleFrom(
+        //           shape: RoundedRectangleBorder(
+        //             borderRadius: BorderRadius.circular(20),
+        //           ),
+        //         ),
+        //         onPressed: () {},
+        //         child: const FittedBox(
+        //           child: Text(
+        //             'Sign Up',
+        //             style: TextStyle(
+        //               decoration: TextDecoration.underline,
+        //             ),
+        //           ),
+        //         ),
+        //       ),
+        //     ],
+        //   ),
+        // ),
       ],
     );
   }
