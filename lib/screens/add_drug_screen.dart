@@ -20,15 +20,6 @@ class AddDrugScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          // SizedBox(
-          //   height: media.size.height,
-          //   width: media.size.width,
-          //   child: SvgPicture.asset(
-          //     'assets/images/Pharmacist.svg',
-          //     colorBlendMode: BlendMode.modulate,
-          //     color: Colors.white.withOpacity(0.25),
-          //   ),
-          // ),
           SlideInLeft(
             duration: Duration(milliseconds: 1000),
             child: Row(
