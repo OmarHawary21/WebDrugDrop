@@ -45,9 +45,14 @@ app.*.map.json
 
 .dart_tool
 .idea
-test
+android
 build
+ios
+linux
+macos
+test
 web
+windows
 .gitignore
 .metadata
 analysis_options.yaml
