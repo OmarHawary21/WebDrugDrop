@@ -7,9 +7,9 @@ import 'package:http/http.dart' as http;
 import '../main.dart';
 
 class AuthProvider with ChangeNotifier {
-  String? _token = null;
+  late String _token = '';
 
-  String? get token {
+  String get getToken {
     if (_token != null && _token!.isNotEmpty) {
       return _token;
     }
@@ -17,15 +17,11 @@ class AuthProvider with ChangeNotifier {
   }
 
   bool get isAuth {
-    print(token?.isNotEmpty);
-    if (token!.isNotEmpty) {
-      return true;
-    }
-    return false;
+    return getToken != '';
   }
 
   Future<void> login(String phoneNumber, String password) async {
-    final url = Uri.parse('http://$host/api/admin/login');
+    final url = Uri.parse('http://$host/api/user/admin/login');
     try {
       final response = await http.post(
         url,
@@ -44,15 +40,28 @@ class AuthProvider with ChangeNotifier {
         throw Exception('Failed');
       }
       _token = responseData['Data']['token'];
-      print(_token);
       notifyListeners();
     } catch (error) {
       rethrow;
     }
   }
 
-  void logout() {
-    _token = '';
+  Future<void> logout() async {
+    final url = Uri.parse('http://$host/api/user/logout');
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $getToken',
+        },
+      );
+      final data = json.decode(response.body);
+      print(data);
+    } catch (error) {
+      rethrow;
+    }
+    // _token = '';
     notifyListeners();
   }
 }

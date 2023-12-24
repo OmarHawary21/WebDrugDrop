@@ -2,18 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'screens/log_in_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/category_drugs_screen.dart';
 import 'screens/add_drug_screen.dart';
+import 'screens/orders-screen.dart';
 import 'providers/auth_provider.dart';
+import 'providers/drugs_provider.dart';
+import 'providers/categories_provider.dart';
+import 'providers/orders_provider.dart';
 
 const String host = '192.168.43.239';
 
 void main() {
-  runApp(const MainApp());
+  runApp(MainApp());
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -21,40 +25,55 @@ class MainApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => AuthProvider(),
         ),
+        ChangeNotifierProxyProvider<AuthProvider, DrugsProvider>(
+          create: (_) => DrugsProvider(''),
+          update: (_, auth, previous) => DrugsProvider(auth.getToken),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CategoriesProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => OrdersProvider(),
+        ),
       ],
       child: Consumer<AuthProvider>(
-        builder: (ctx, auth, child) => MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'DrugDrop',
-          theme: ThemeData(
-            scaffoldBackgroundColor: const Color.fromRGBO(255, 252, 252, 1),
-            colorScheme: ColorScheme.fromSwatch().copyWith(
-              primary: const Color.fromRGBO(3, 37, 78, 1),
-              secondary: const Color.fromRGBO(219, 243, 250, 1),
-            ),
-            appBarTheme: AppBarTheme(
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  bottomRight: Radius.elliptical(100, 50),
-                  bottomLeft: Radius.elliptical(100, 50),
+        builder: (ctx, auth, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'DrugDrop',
+            theme: ThemeData(
+              scaffoldBackgroundColor: const Color.fromRGBO(255, 252, 252, 1),
+              colorScheme: ColorScheme.fromSwatch().copyWith(
+                primary: const Color.fromRGBO(3, 37, 78, 1),
+                secondary: const Color.fromRGBO(219, 243, 250, 1),
+              ),
+              appBarTheme: AppBarTheme(
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    bottomRight: Radius.elliptical(100, 50),
+                    bottomLeft: Radius.elliptical(100, 50),
+                  ),
+                ),
+                toolbarHeight: MediaQuery.of(context).size.height * 0.25,
+                color: const Color.fromRGBO(230, 240, 255, 1),
+                titleTextStyle: const TextStyle(
+                  color: Color.fromRGBO(3, 37, 78, 1),
+                  fontSize: 20,
+                  fontFamily: 'PollerOne',
                 ),
               ),
-              toolbarHeight: MediaQuery.of(context).size.height * 0.25,
-              color: const Color.fromRGBO(230, 240, 255, 1),
-              titleTextStyle: const TextStyle(
-                color: Color.fromRGBO(3, 37, 78, 1),
-                fontSize: 20,
-                fontFamily: 'PollerOne',
-              ),
             ),
-          ),
-          // home: auth.isAuth ? AddDrugScreen() : LogInScreen(),
-          home: AddDrugScreen(),
-          routes: {
-            LogInScreen.routeName: (_) => LogInScreen(),
-            AddDrugScreen.routeName: (_) => AddDrugScreen(),
-          },
-        ),
+            // home: HomeScreen(),
+            home: auth.isAuth ? HomeScreen() : LogInScreen(),
+            routes: {
+              LogInScreen.routeName: (_) => LogInScreen(),
+              HomeScreen.routeName: (_) => HomeScreen(),
+              CategoryDrugsScreen.routeName: (_) => CategoryDrugsScreen(),
+              AddDrugScreen.routeName: (_) => AddDrugScreen(),
+              OrdersScreen.routeName: (_) => OrdersScreen(),
+            },
+          );
+        },
       ),
     );
   }
