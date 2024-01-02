@@ -2,25 +2,36 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 
-import 'auth_provider.dart';
 import '../main.dart';
 import '../models/drug.dart';
+import '../models/tag.dart';
 
 class DrugsProvider with ChangeNotifier {
   final String token;
 
   DrugsProvider(this.token);
 
-  List<Drug> _drugs = [];
+  List<Drug> _drugs = [
+    Drug(id: 1, tagId: 1, imgUrl: 'imgUrl', dose: 100, quantity: 15, price: 15000, expiryDate: 'expiryDate'),
+  ];
+
+  List<Tag> _tags = [];
 
   List<Drug> get drugs {
     return [..._drugs];
   }
 
+  List<Tag> get tags {
+    return [..._tags];
+  }
+
   Future<void> addDrug(Map<String, dynamic> data) async {
     final url = Uri.parse('http://$host/api/drug/create');
+    var request = http.MultipartRequest('POST', url);
+    request.files.add(http.MultipartFile.fromBytes('img_url', data['image']));
+    request.fields['tagId'] = 'tagId';
+    request.headers[''] = '';
 
     try {
       final response = await http.put(url,
@@ -32,7 +43,7 @@ class DrugsProvider with ChangeNotifier {
           body: jsonEncode(<String, dynamic>{
             'tag_id': '1',
             'price': data['price'],
-            'quantitiy': data['quantity'],
+            'quantity': data['quantity'],
             'expiry_date': data['expiryDate'],
             'dose': data['dose'],
             'img': null,
@@ -57,8 +68,6 @@ class DrugsProvider with ChangeNotifier {
 
   Future<void> fetchDrugsEnglish() async {
     final url = Uri.parse('http://$host/api/drug/get?lang_code=en');
-    print(url);
-    print('$token------------------');
 
     final response = await http.get(url, headers: {
       'Accept': 'application/json',
@@ -67,25 +76,41 @@ class DrugsProvider with ChangeNotifier {
     final responseData = json.decode(response.body);
     if (responseData['Status'] == 'Success') {
       List<dynamic> fetchedDrugs = responseData['Data'];
+      List<Drug> temp = [];
       for (var drug in fetchedDrugs) {
-        _drugs.add(Drug(
-        id: drug['id'].toString(),
-        tagId: drug['tag_id'].toString(),
-        imgUrl: drug['img_url'].toString(),
-        dose: drug['dose'].toString(),
-        quantity: drug['quantitiy'].toString(),
-        price: drug['price'].toString(),
-        expiryDate: drug['expiry_date'],
-        englishTradeName: drug['trade_name'],
-        englishScientificName: drug['scientific_name'],
-        englishCompany: drug['company'],
-        englishDoseUnit: drug['dose_unit']
-      ));
+        temp.add(Drug(
+            id: drug['id'],
+            tagId: drug['tag_id'],
+            imgUrl: drug['img_url'].toString(),
+            dose: drug['dose'],
+            quantity: drug['quantitiy'],
+            price: drug['price'],
+            expiryDate: drug['expiry_date'],
+            englishTradeName: drug['trade_name'],
+            englishScientificName: drug['scientific_name'],
+            englishCompany: drug['company'],
+            englishDoseUnit: drug['dose_unit']));
       }
-      print(_drugs);
+      _drugs = temp;
     } else {
       throw Exception(responseData['Message']);
     }
-    print(json.decode(response.body));
+  }
+
+  Future<void> getTags() async {
+    final url = Uri.parse('http://$host/api/admin/tag/get');
+
+    final response = await http.get(url, headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+    final data = json.decode(response.body);
+    final tags = data['Data'] as List<dynamic>;
+    final List<Tag> temp = [];
+    tags.forEach((tag) {
+      temp.add(Tag(tag['id'], tag['en_name'], tag['ar_name']));
+    });
+    _tags = temp;
+    print(_tags);
   }
 }

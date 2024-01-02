@@ -1,10 +1,10 @@
 class Drug{
-  final String id;
-  final String tagId;
+  final int id;
+  final int tagId;
   final String imgUrl;
-  final String dose;
-  final String quantity;
-  final String price;
+  final int dose;
+  final int quantity;
+  final int price;
   final String expiryDate;
   final String englishTradeName;
   final String arabicTradeName;

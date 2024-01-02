@@ -1,12 +1,15 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 
+import '../screens/edit_drug_screen.dart';
+
 class DrugItem extends StatefulWidget {
+  final int id;
   final String name;
-  final String price;
+  final int price;
   final String imageUrl;
 
-  DrugItem(this.name, this.price, this.imageUrl);
+  DrugItem(this.id, this.name, this.price, this.imageUrl);
 
   @override
   State<DrugItem> createState() => _DrugItemState();
@@ -93,7 +96,8 @@ class _DrugItemState extends State<DrugItem> {
                     height: height * 0.06,
                     width: width * 0.1,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => Navigator.of(context)
+                          .pushNamed(EditDrugScreen.routeName),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primary,
                         foregroundColor: secondary,

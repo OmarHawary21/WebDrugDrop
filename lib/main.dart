@@ -5,7 +5,8 @@ import 'screens/log_in_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/category_drugs_screen.dart';
 import 'screens/add_drug_screen.dart';
-import 'screens/orders-screen.dart';
+import 'screens/orders_screen.dart';
+import 'screens/edit_drug_screen.dart';
 import 'providers/auth_provider.dart';
 import 'providers/drugs_provider.dart';
 import 'providers/categories_provider.dart';
@@ -29,8 +30,9 @@ class MainApp extends StatelessWidget {
           create: (_) => DrugsProvider(''),
           update: (_, auth, previous) => DrugsProvider(auth.getToken),
         ),
-        ChangeNotifierProvider(
-          create: (_) => CategoriesProvider(),
+        ChangeNotifierProxyProvider<AuthProvider, CategoriesProvider>(
+          create: (_) => CategoriesProvider(''),
+          update: (_, auth, previous) => CategoriesProvider(auth.getToken),
         ),
         ChangeNotifierProvider(
           create: (_) => OrdersProvider(),
@@ -42,6 +44,7 @@ class MainApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             title: 'DrugDrop',
             theme: ThemeData(
+
               scaffoldBackgroundColor: const Color.fromRGBO(255, 252, 252, 1),
               colorScheme: ColorScheme.fromSwatch().copyWith(
                 primary: const Color.fromRGBO(3, 37, 78, 1),
@@ -71,6 +74,7 @@ class MainApp extends StatelessWidget {
               CategoryDrugsScreen.routeName: (_) => CategoryDrugsScreen(),
               AddDrugScreen.routeName: (_) => AddDrugScreen(),
               OrdersScreen.routeName: (_) => OrdersScreen(),
+              EditDrugScreen.routeName: (_) => EditDrugScreen(),
             },
           );
         },

@@ -17,12 +17,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _form = GlobalKey<FormState>();
+  bool _isLoading = false;
+  bool _isInit = false;
 
   late String searchInput;
 
   @override
-  void didChangeDependencies() {
-    Provider.of<DrugsProvider>(context).fetchDrugsEnglish();
+  void didChangeDependencies() async {
+    if (!_isInit){
+      setState(() => _isLoading = true);
+      // await Provider.of<CategoriesProvider>(context, listen: false).getCategories();
+      // await Provider.of<DrugsProvider>(context, listen: false).fetchDrugsEnglish();
+      setState(() => _isLoading = false);
+    }
+    _isInit = true;
     super.didChangeDependencies();
   }
 
@@ -34,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final secondary = Theme.of(context).colorScheme.secondary;
     final drugs = Provider.of<DrugsProvider>(context).drugs;
     final categories = Provider.of<CategoriesProvider>(context).categories;
+
     return Scaffold(
       body: SlideInLeft(
         duration: const Duration(milliseconds: 1000),
@@ -45,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Expanded(
               flex: 8,
-              child: Column(
+              child: _isLoading ? Center(child: CircularProgressIndicator(),) : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Spacer(),
@@ -87,13 +96,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (_, index) => Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: GestureDetector(
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(60),
                           onTap: () => Navigator.of(context)
-                              .pushNamed(CategoryDrugsScreen.routeName),
+                              .pushNamed(CategoryDrugsScreen.routeName, arguments: categories[index].id),
                           child: CircleAvatar(
                             radius: 60,
-                            backgroundColor: secondary,
-                            child: Text(categories[index]['name']!),
+                            backgroundColor: const Color.fromRGBO(68, 191, 219, 1),
+                            child: Text(categories[index].englishName),
                           ),
                         ),
                       ),
@@ -104,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Padding(
                     padding: const EdgeInsets.only(left: 20),
                     child: Text(
-                      'Best Sellers',
+                      'All Drugs',
                       style: TextStyle(
                         fontFamily: 'PollerOne',
                         color: primary,
@@ -117,6 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: height * 0.65,
                     child: GridView.builder(
                       itemBuilder: (_, index) => DrugItem(
+                        drugs[index].id,
                         drugs[index].englishTradeName,
                         drugs[index].price,
                         drugs[index].imgUrl,

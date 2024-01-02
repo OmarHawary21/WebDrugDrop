@@ -21,7 +21,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> login(String phoneNumber, String password) async {
-    final url = Uri.parse('http://$host/api/user/admin/login');
+    final url = Uri.parse('http://$host/api/admin/user/login');
     try {
       final response = await http.post(
         url,
@@ -57,11 +57,10 @@ class AuthProvider with ChangeNotifier {
         },
       );
       final data = json.decode(response.body);
-      print(data);
     } catch (error) {
       rethrow;
     }
-    // _token = '';
+    _token = '';
     notifyListeners();
   }
 }

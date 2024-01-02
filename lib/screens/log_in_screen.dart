@@ -171,12 +171,12 @@ class _FormsState extends State<Forms> {
     _formKey.currentState?.save();
     setState(() => _isLoading = true);
     try {
-      await Provider.of<AuthProvider>(context, listen: false)
-          .login(_authData['phoneNumber']!, _authData['password']!)
-          .timeout(
-            const Duration(seconds: 5),
-            onTimeout: () => throw Exception('Something went wrong'),
-          );
+      // await Provider.of<AuthProvider>(context, listen: false)
+      //     .login(_authData['phoneNumber']!, _authData['password']!)
+      //     .timeout(
+      //       const Duration(seconds: 5),
+      //       onTimeout: () => throw Exception('Something went wrong'),
+      //     );
       Navigator.of(context).pushNamedAndRemoveUntil(
           HomeScreen.routeName, (Route<dynamic> route) => false);
     } catch (error) {
@@ -184,7 +184,7 @@ class _FormsState extends State<Forms> {
         context,
         error.toString() == 'Something went wrong'
             ? 'Something went wrong.'
-            : 'Worng phone number or password please check the spelling and try again.',
+            : 'Wrong phone number or password please check the spelling and try again.',
       );
     }
     setState(() => _isLoading = false);
