@@ -19,19 +19,42 @@ class _HomeScreenState extends State<HomeScreen> {
   final _form = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _isInit = false;
-
+  bool _isSearching = false;
+  bool _showCloseIcon = false;
   late String searchInput;
 
   @override
   void didChangeDependencies() async {
-    if (!_isInit){
+    if (!_isInit) {
       setState(() => _isLoading = true);
-      // await Provider.of<CategoriesProvider>(context, listen: false).getCategories();
-      // await Provider.of<DrugsProvider>(context, listen: false).fetchDrugsEnglish();
+      await Provider.of<CategoriesProvider>(context, listen: false)
+          .getCategories();
+      await Provider.of<DrugsProvider>(context, listen: false)
+          .fetchDrugsEnglish();
       setState(() => _isLoading = false);
     }
     _isInit = true;
     super.didChangeDependencies();
+  }
+
+  void updateData(String value) async {
+    setState(() {
+      _isLoading = true;
+      _isSearching = true;
+    });
+
+    try {
+      //here I will get the result of search
+      Provider.of<DrugsProvider>(context, listen: false)
+          .getResult(value)
+          .then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      });
+    } catch (error) {
+      print(error);
+    }
   }
 
   @override
@@ -42,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final secondary = Theme.of(context).colorScheme.secondary;
     final drugs = Provider.of<DrugsProvider>(context).drugs;
     final categories = Provider.of<CategoriesProvider>(context).categories;
+    final searchedDrugs = Provider.of<DrugsProvider>(context).searchedDrugs;
 
     return Scaffold(
       body: SlideInLeft(
@@ -54,96 +78,147 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             Expanded(
               flex: 8,
-              child: _isLoading ? Center(child: CircularProgressIndicator(),) : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: _isLoading
+                  ? Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Categories',
-                          style: TextStyle(
-                            fontFamily: 'PollerOne',
-                            color: primary,
-                            fontSize: width * 0.016,
+                        const Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Categories',
+                                style: TextStyle(
+                                  fontFamily: 'PollerOne',
+                                  color: primary,
+                                  fontSize: width * 0.016,
+                                ),
+                              ),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: TextFormField(
+                                  onTap: () {
+                                    setState(() {
+                                      _showCloseIcon = true;
+                                    });
+                                  },
+                                  onFieldSubmitted: (text) {
+                                    updateData(text);
+                                  },
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor:
+                                        const Color.fromRGBO(68, 191, 219, 1)
+                                            .withOpacity(0.2),
+                                    hintText: 'Search Drugs',
+                                    suffixIcon: const Icon(Icons.search),
+                                    prefixIcon: IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _isSearching = false;
+                                          });
+                                        },
+                                        icon: Icon(Icons.close)),
+                                    border: InputBorder.none,
+                                    constraints: BoxConstraints(
+                                      maxWidth: width * 0.35,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(15),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: const Color.fromRGBO(68, 191, 219, 1)
-                                  .withOpacity(0.2),
-                              hintText: 'Search Drugs',
-                              suffixIcon: const Icon(Icons.search),
-                              border: InputBorder.none,
-                              constraints: BoxConstraints(
-                                maxWidth: width * 0.35,
+                        SizedBox(
+                          height: height * 0.2,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemBuilder: (_, index) => Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(60),
+                                onTap: () => Navigator.of(context).pushNamed(
+                                    CategoryDrugsScreen.routeName,
+                                    arguments: categories[index].id),
+                                child: CircleAvatar(
+                                  radius: 60,
+                                  backgroundColor:
+                                      const Color.fromRGBO(68, 191, 219, 1),
+                                  child: Text(categories[index].englishName),
+                                ),
                               ),
                             ),
+                            itemCount: categories.length,
                           ),
+                        ),
+                        const Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 20),
+                          child: _isSearching
+                              ? Text(
+                                  'Searched Drugs',
+                                  style: TextStyle(
+                                    fontFamily: 'PollerOne',
+                                    color: primary,
+                                    fontSize: width * 0.016,
+                                  ),
+                                )
+                              : Text(
+                                  'All Drugs',
+                                  style: TextStyle(
+                                    fontFamily: 'PollerOne',
+                                    color: primary,
+                                    fontSize: width * 0.016,
+                                  ),
+                                ),
+                        ),
+                        const Spacer(),
+                        SizedBox(
+                          height: height * 0.65,
+                          child: _isSearching
+                              ? GridView.builder(
+                                  itemBuilder: (_, index) => DrugItem(
+                                    searchedDrugs[index].id,
+                                    searchedDrugs[index].englishTradeName,
+                                    searchedDrugs[index].price,
+                                    searchedDrugs[index].imgUrl,
+                                  ),
+                                  itemCount: searchedDrugs.length,
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: width > 800
+                                        ? 4
+                                        : width > 400
+                                            ? 3
+                                            : 2,
+                                  ),
+                                )
+                              : GridView.builder(
+                                  itemBuilder: (_, index) => DrugItem(
+                                    drugs[index].id,
+                                    drugs[index].englishTradeName,
+                                    drugs[index].price,
+                                    drugs[index].imgUrl,
+                                  ),
+                                  itemCount: drugs.length,
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: width > 800
+                                        ? 4
+                                        : width > 400
+                                            ? 3
+                                            : 2,
+                                  ),
+                                ),
                         ),
                       ],
                     ),
-                  ),
-                  SizedBox(
-                    height: height * 0.2,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemBuilder: (_, index) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(60),
-                          onTap: () => Navigator.of(context)
-                              .pushNamed(CategoryDrugsScreen.routeName, arguments: categories[index].id),
-                          child: CircleAvatar(
-                            radius: 60,
-                            backgroundColor: const Color.fromRGBO(68, 191, 219, 1),
-                            child: Text(categories[index].englishName),
-                          ),
-                        ),
-                      ),
-                      itemCount: categories.length,
-                    ),
-                  ),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20),
-                    child: Text(
-                      'All Drugs',
-                      style: TextStyle(
-                        fontFamily: 'PollerOne',
-                        color: primary,
-                        fontSize: width * 0.016,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  SizedBox(
-                    height: height * 0.65,
-                    child: GridView.builder(
-                      itemBuilder: (_, index) => DrugItem(
-                        drugs[index].id,
-                        drugs[index].englishTradeName,
-                        drugs[index].price,
-                        drugs[index].imgUrl,
-                      ),
-                      itemCount: drugs.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: width > 800
-                            ? 4
-                            : width > 400
-                                ? 3
-                                : 2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),

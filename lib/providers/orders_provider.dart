@@ -1,3 +1,6 @@
+import 'dart:js_interop';
+
+import 'package:drugdrop_web/main.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -5,149 +8,36 @@ import 'dart:convert';
 import '../models/orders_data.dart';
 
 class OrdersProvider with ChangeNotifier {
-  List<Order> _orders = [
-    Order(
-        id: '1',
-        name: 'taghreed',
-        phoneNumber: '0957515618',
-        location: 'damascus alabbasin',
-        date: DateTime.now(),
-        price: '55 ',
-        isPaid: true,
-        state: 'Preparing'),
-    Order(
-        id: '2',
-        name: 'jeeda',
-        phoneNumber: '0957515617',
-        location: 'damascus almazeh',
-        date: DateTime.now(),
-        price: '55 ',
-        isPaid: false,
-        state: 'Preparing'),
-    Order(
-        id: '3',
-        name: 'omar',
-        phoneNumber: '0957515664',
-        location: 'damascus almedan',
-        date: DateTime.now(),
-        price: '58 ',
-        isPaid: false,
-        state: 'Preparing'),
-    Order(
-        id: '4',
-        name: 'omran',
-        phoneNumber: '0957515611',
-        location: 'damascus almhajren',
-        date: DateTime.now(),
-        price: '55 ',
-        isPaid: true,
-        state: 'Preparing'),
-    Order(
-        id: '5',
-        name: 'taghreed',
-        phoneNumber: '0957515618',
-        location: 'damascus alabbasin',
-        date: DateTime.now(),
-        price: '55 ',
-        isPaid: true,
-        state: 'Preparing'),
-    Order(
-      id: '6',
-      name: 'jeeda',
-      phoneNumber: '0957515617',
-      location: 'damascus almazeh',
-      date: DateTime.now(),
-      price: '55 ',
-      isPaid: false,
-      state: 'Preparing',
-    ),
-    Order(
-        id: '7',
-        name: 'omar',
-        phoneNumber: '0957515618',
-        location: 'damascus almedan',
-        date: DateTime.now(),
-        price: '58 ',
-        isPaid: false,
-        state: 'Preparing'),
-    Order(
-        id: '8',
-        name: 'taghreed',
-        phoneNumber: '0957515618',
-        location: 'damascus alabbasin',
-        date: DateTime.now(),
-        price: '55 ',
-        isPaid: true,
-        state: 'on Going'),
-    Order(
-        id: '9',
-        name: 'jeeda',
-        phoneNumber: '0957515617',
-        location: 'damascus almazeh',
-        date: DateTime.now(),
-        price: '55 ',
-        isPaid: false,
-        state: 'Delivered'),
-    Order(
-        id: '10',
-        name: 'omar',
-        phoneNumber: '0957515664',
-        location: 'damascus almedan',
-        date: DateTime.now(),
-        price: '58 ',
-        isPaid: false,
-        state: 'Delivered'),
-    Order(
-        id: '11',
-        name: 'omran',
-        phoneNumber: '0957515611',
-        location: 'damascus almhajren',
-        date: DateTime.now(),
-        price: '55 ',
-        isPaid: true,
-        state: 'Delivered'),
-    Order(
-        id: '12',
-        name: 'taghreed',
-        phoneNumber: '0957515618',
-        location: 'damascus alabbasin',
-        date: DateTime.now(),
-        price: '55 ',
-        isPaid: true,
-        state: 'Delivered'),
-    Order(
-        id: '13',
-        name: 'jeeda',
-        phoneNumber: '0957515617',
-        location: 'damascus almazeh',
-        date: DateTime.now(),
-        price: '55 ',
-        isPaid: false,
-        state: 'Delivered'),
-  ];
+  final String token;
+  OrdersProvider(this.token);
+  List<Order> _orders = [];
 
   List<Order> get allOrders {
     return [..._orders];
   }
 
+  Order findOrderById(int id) {
+    return _orders.firstWhere((drug) => drug.id == id);
+  }
+
   List<Order> get preparingOrders {
-    return _orders.where((order) => order.state == 'Preparing').toList();
+    return _orders.where((order) => order.state == 'pending').toList();
   }
 
   List<Order> get onGoingOrders {
-    return _orders.where((order) => order.state == 'on Going').toList();
+    return _orders.where((order) => order.state == 'on going').toList();
   }
 
   List<Order> get deliveredOrders {
-    return _orders.where((order) => order.state == 'Delivered').toList();
+    return _orders.where((order) => order.state == 'done').toList();
   }
 
   Future<void> fetchOrders() async {
-    // final url = Uri.parse(
-    //     'https://shop-app-8cd8f-default-rtdb.firebaseio.com/orders/$userId.json?auth=$token');
-    final url = Uri.parse(
-        'https://shop-app-8cd8f-default-rtdb.firebaseio.com/orders.json');
-    final response = await http.get(url);
+    final url = Uri.http(host, '/api/admin/order/get');
+    final response = await http.get(url, headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
     final List<Order> loadedOrders = [];
     final fetchedOrders = json.decode(response.body) == null
         ? null
@@ -155,19 +45,65 @@ class OrdersProvider with ChangeNotifier {
     if (fetchedOrders == null) {
       return;
     }
-    fetchedOrders.forEach((orderId, orderData) {
+    print(fetchedOrders);
+    fetchedOrders['Data'].forEach((orderData) {
       loadedOrders.add(Order(
-        id: orderId,
+        id: orderData['id'],
         name: orderData['name'],
         phoneNumber: orderData['phone_number'],
         location: orderData['location'],
-        price: orderData['price'],
-        date: DateTime.parse(orderData['time']),
-        isPaid: orderData['ispaid'],
-        state: orderData['state'],
+        price: orderData['total_price'],
+        date: orderData['created_at'],
+        isPaid: orderData['is_paid'],
+        state: orderData['status'].toString(),
       ));
+      print('${orderData['status']}-------------------------------');
     });
+
     _orders = loadedOrders.reversed.toList();
     notifyListeners();
+  }
+
+  Future<void> updateOrderStatus(int id, String status) async {
+    final url =
+        Uri.http(host, '/api/admin/order/update/$id', {'lang_code': 'en'});
+
+    final response = await http.patch(url, headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token'
+    }, body: {
+      'status': status,
+    });
+    final data = json.decode(response.body);
+
+    final responseData = data['Status'];
+    print(responseData);
+    if (responseData == 'Success') {
+      final editedOrder = findOrderById(id);
+      editedOrder.state = status;
+      deliveredOrders.add(editedOrder);
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateOrderPayment(int id, bool payment) async {
+    final url = Uri.http(host, '/api/admin/order/update/$id');
+
+    final response = await http.patch(url, headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token'
+    }, body: {
+      'is_paid': payment.toString(),
+    });
+    final data = json.decode(response.body);
+    print(data);
+    final responseData = data['Status'];
+
+    if (responseData == 'Success') {
+      final editedOrder = findOrderById(id);
+      editedOrder.isPaid = true;
+      deliveredOrders.add(editedOrder);
+      notifyListeners();
+    }
   }
 }

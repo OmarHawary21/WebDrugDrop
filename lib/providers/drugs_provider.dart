@@ -12,11 +12,22 @@ class DrugsProvider with ChangeNotifier {
 
   DrugsProvider(this.token);
 
+  List<Drug> _searchedDrugs = [];
   List<Drug> _drugs = [
-    Drug(id: 1, tagId: 1, imgUrl: 'imgUrl', dose: 100, quantity: 15, price: 15000, expiryDate: 'expiryDate'),
+    Drug(
+        id: 1,
+        tagId: 1,
+        imgUrl: 'imgUrl',
+        dose: 100,
+        quantity: 15,
+        price: 15000,
+        expiryDate: 'expiryDate'),
   ];
 
   List<Tag> _tags = [];
+  List<Drug> get searchedDrugs {
+    return [..._searchedDrugs];
+  }
 
   List<Drug> get drugs {
     return [..._drugs];
@@ -24,6 +35,52 @@ class DrugsProvider with ChangeNotifier {
 
   List<Tag> get tags {
     return [..._tags];
+  }
+
+  Future<void> getResult(String value) async {
+    print('getting results');
+    var url;
+    print('$value');
+
+    url = Uri.http(
+        host, '/api/search/drug', {'lang_code': 'en', 'search': value});
+
+    try {
+      final response = await http.get(url, headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      });
+      final extractedData = json.decode(response.body) as Map<String, dynamic>;
+
+      List<Drug> loadedDrugs = [];
+      if (extractedData == Null) {
+        return;
+      }
+      print(extractedData);
+
+      extractedData['Data'].forEach((drug) {
+        loadedDrugs.add(
+          Drug(
+              id: drug['id'],
+              englishTradeName: drug['trade_name'],
+              englishScientificName: drug['scientific_name'],
+              englishCompany: drug['company'],
+              tagId: drug['tag_id'],
+              dose: drug['dose'],
+              englishDoseUnit: drug['dose_unit'],
+              price: drug['price'],
+              quantity: drug['quantity'],
+              expiryDate: drug['expiry_date'].toString(),
+              imgUrl: drug['img_url'] ?? 'null'),
+        );
+      });
+      _searchedDrugs = loadedDrugs;
+
+      notifyListeners();
+    } catch (error) {
+      print(error.toString());
+      //throw (error);
+    }
   }
 
   Future<void> addDrug(Map<String, dynamic> data) async {
@@ -83,7 +140,7 @@ class DrugsProvider with ChangeNotifier {
             tagId: drug['tag_id'],
             imgUrl: drug['img_url'].toString(),
             dose: drug['dose'],
-            quantity: drug['quantitiy'],
+            quantity: drug['quantity'],
             price: drug['price'],
             expiryDate: drug['expiry_date'],
             englishTradeName: drug['trade_name'],
