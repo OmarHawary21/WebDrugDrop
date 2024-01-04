@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:web_drug_drop/models/orders_data.dart';
 
 import 'screens/log_in_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/category_drugs_screen.dart';
 import 'screens/add_drug_screen.dart';
-import 'screens/orders_screen.dart';
+import 'screens/orders-screen.dart';
 import 'screens/edit_drug_screen.dart';
 import 'providers/auth_provider.dart';
 import 'providers/drugs_provider.dart';
 import 'providers/categories_provider.dart';
 import 'providers/orders_provider.dart';
 
-const String host = '192.168.43.239';
+const String  host = '192.168.43.239';
 
 void main() {
   runApp(MainApp());
@@ -34,8 +35,9 @@ class MainApp extends StatelessWidget {
           create: (_) => CategoriesProvider(''),
           update: (_, auth, previous) => CategoriesProvider(auth.getToken),
         ),
-        ChangeNotifierProvider(
-          create: (_) => OrdersProvider(),
+        ChangeNotifierProxyProvider<AuthProvider, OrdersProvider>(
+          create: (_) => OrdersProvider(''),
+          update: (_, auth, previous) => OrdersProvider(auth.getToken),
         ),
       ],
       child: Consumer<AuthProvider>(

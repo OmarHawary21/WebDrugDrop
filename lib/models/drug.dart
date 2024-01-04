@@ -14,6 +14,8 @@ class Drug{
   final String arabicCompany;
   final String englishDoseUnit;
   final String arabicDoseUnit;
+  final String englishDescription;
+  final String arabicDescription;
 
   Drug({
     required this.id,
@@ -31,5 +33,7 @@ class Drug{
     this.arabicCompany = '',
     this.englishDoseUnit = '',
     this.arabicDoseUnit = '',
+    this.englishDescription = '',
+    this.arabicDescription = '',
 });
 }

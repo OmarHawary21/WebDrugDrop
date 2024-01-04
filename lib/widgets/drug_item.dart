@@ -48,12 +48,18 @@ class _DrugItemState extends State<DrugItem> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      widget.name,
-                      style: TextStyle(
-                        color: primary,
-                        fontSize: width * 0.013,
-                        fontFamily: 'Poppins',
+                    SizedBox(
+                      width: width * 0.08,
+                      child: Text(
+                        widget.name,
+                        softWrap: true,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: primary,
+                          fontSize: width * 0.013,
+                          fontFamily: 'Poppins',
+                        ),
                       ),
                     ),
                     Text(
@@ -96,8 +102,10 @@ class _DrugItemState extends State<DrugItem> {
                     height: height * 0.06,
                     width: width * 0.1,
                     child: ElevatedButton(
-                      onPressed: () => Navigator.of(context)
-                          .pushNamed(EditDrugScreen.routeName),
+                      onPressed: () => Navigator.of(context).pushNamed(
+                        EditDrugScreen.routeName,
+                        arguments: widget.id,
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primary,
                         foregroundColor: secondary,

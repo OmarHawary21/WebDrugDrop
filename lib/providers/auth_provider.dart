@@ -42,6 +42,7 @@ class AuthProvider with ChangeNotifier {
       _token = responseData['Data']['token'];
       notifyListeners();
     } catch (error) {
+      print(error);
       rethrow;
     }
   }

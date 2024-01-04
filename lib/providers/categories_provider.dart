@@ -29,9 +29,9 @@ class CategoriesProvider with ChangeNotifier {
 
   Future<void> getCategories() async {
     final url = Uri.parse('http://$host/api/admin/category/get');
-    print(token);
 
     final response = await http.get(url, headers: {
+      // 'ngrok-skip-browser-warning': '1',
       'Accept': 'application/json',
       'Authorization': 'Bearer $token',
     });
@@ -52,12 +52,12 @@ class CategoriesProvider with ChangeNotifier {
     final response = await http.get(
       url,
       headers: {
+        // 'ngrok-skip-browser-warning': '1',
         'Accept': 'application/json',
         'Authorization': 'Bearer $token',
       },
     );
     final data = json.decode(response.body);
-    print(data);
     final responseData = data['Data'] as List<dynamic>;
     List<Drug> temp = [];
     responseData.forEach((drug) {
@@ -66,7 +66,7 @@ class CategoriesProvider with ChangeNotifier {
         tagId: drug['tag_id'],
         imgUrl: drug['img_url'].toString(),
         dose: drug['dose'],
-        quantity: drug['quantitiy'],
+        quantity: drug['quantity'],
         price: drug['price'],
         expiryDate: drug['expiry_date'],
         englishTradeName: drug['trade_name'],

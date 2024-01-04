@@ -6,7 +6,7 @@ import 'logo.dart';
 import '../screens/add_drug_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/log_in_screen.dart';
-import '../screens/orders_screen.dart';
+import '../screens/orders-screen.dart';
 import '../providers/auth_provider.dart';
 
 class SideMenu extends StatelessWidget {

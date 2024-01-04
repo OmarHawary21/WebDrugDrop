@@ -57,8 +57,10 @@ class _AddDrugScreenState extends State<AddDrugScreen> {
     final data = ImagePicker();
     final file = await data.pickImage(source: ImageSource.gallery);
     if (file != null) {
+      var path = file.path;
       setState(() => _isLoading = true);
       var selected = await file.readAsBytes();
+      print('$path-------------------');
       setState(() {
         _isLoading = false;
         selectedImage = selected;
@@ -626,6 +628,7 @@ class _AddButtonState extends State<AddButton> {
     }
     _form.currentState!.save();
     setState(() => _isLoading = true);
+    print(_data);
     await Provider.of<DrugsProvider>(context, listen: false)
         .addDrug(_data)
         .timeout(
