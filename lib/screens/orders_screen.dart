@@ -11,8 +11,35 @@ bool preparing = false;
 bool onGoing = false;
 bool delivered = false;
 
-class OrdersScreen extends StatelessWidget {
+class OrdersScreen extends StatefulWidget {
   static const routeName = '/orders-screen';
+
+  @override
+  State<OrdersScreen> createState() => _OrdersScreenState();
+}
+
+class _OrdersScreenState extends State<OrdersScreen> {
+  var _isInit = true;
+  var _isLoading = false;
+  @override
+  void didChangeDependencies() {
+    if (_isInit) {
+      setState(() {
+        _isLoading = true;
+      });
+      Provider.of<OrdersProvider>(context, listen: false)
+          .fetchOrders()
+          .then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      });
+    }
+    _isInit = false;
+    super.didChangeDependencies();
+
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +56,13 @@ class OrdersScreen extends StatelessWidget {
             ),
             Expanded(
               flex: 6,
-              child: SingleChildScrollView(
+              child:
+                  // _isLoading
+                  //     ? Center(
+                  //         child: CircularProgressIndicator(),
+                  //       )
+                  //     :
+                  SingleChildScrollView(
                 child: Column(
                   children: [
                     Container(
@@ -47,7 +80,7 @@ class OrdersScreen extends StatelessWidget {
                       ),
                     ),
                     StatusButtons(),
-                    Divider(),
+                    Divider(color: Colors.grey),
                     Container(
                       height: media.size.height * 0.75,
                       padding: EdgeInsets.all(20),
@@ -168,32 +201,88 @@ class _StatusButtonsState extends State<StatusButtons> {
 }
 
 List<String> status = <String>[
-  'Preparing',
-  'On Going',
-  'Delivered',
+  'pending',
+  'on going',
+  'done',
 ];
+
 List<Color> colors = [
-  Colors.yellow,
+  Colors.purple,
   Colors.blue,
   Colors.green,
 ];
 
 class DropdownButtonExample extends StatefulWidget {
-  const DropdownButtonExample({super.key});
-
+  String dropdownValue;
+  int id;
+  DropdownButtonExample(this.dropdownValue, this.id);
   @override
   State<DropdownButtonExample> createState() => _DropdownButtonExampleState();
 }
 
 class _DropdownButtonExampleState extends State<DropdownButtonExample> {
-  String dropdownValue = status.first;
+  late String selectedOption;
+  @override
+  void initState() {
+    // TODO: implement initState
+    selectedOption = widget.dropdownValue ?? 'Pending';
+    super.initState();
+  }
+
+  void _showDialog(BuildContext context, String content, String value, int id) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        title: Center(
+          child: Text(
+            'Attention',
+            style: TextStyle(color: Theme.of(context).colorScheme.background),
+          ),
+        ),
+        content: Text(content),
+        actions: [
+          ElevatedButton(
+            onPressed: () async {
+              setState(() {
+                selectedOption = value;
+                Navigator.pop(context);
+              });
+              try {
+                await Provider.of<OrdersProvider>(context, listen: false)
+                    .updateOrderStatus(id, value);
+              } catch (error) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(
+                    'Could not change order status! Try again',
+                    textAlign: TextAlign.center,
+                  ),
+                ));
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Yes'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('NO'),
+          )
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    print('${widget.dropdownValue}');
+    print(selectedOption);
+
     var theme = Theme.of(context).colorScheme;
 
     return DropdownButton<String>(
-      value: dropdownValue,
+      value: widget.dropdownValue,
       icon: const Icon(Icons.arrow_drop_down),
       //elevation: 16,
       borderRadius: BorderRadius.circular(15),
@@ -202,13 +291,12 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
         height: 2,
         color: theme.secondary,
       ),
-      onChanged: (String? value) {
+      onChanged: (value) {
         // This is called when the user selects an item.
-        setState(() {
-          dropdownValue = value!;
-        });
-        Provider.of<Order>(context).sendOrderStatus(value!);
+        _showDialog(context, 'Are you sure to change the state of order?',
+            value.toString(), widget.id);
       },
+      dropdownColor: Theme.of(context).scaffoldBackgroundColor,
       items: status.asMap().entries.map((entry) {
         int index = entry.key;
         String option = entry.value;
@@ -217,7 +305,9 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
           value: option,
           child: Text(
             option,
-            style: TextStyle(color: color),
+            style: TextStyle(
+              color: color,
+            ),
           ),
         );
       }).toList(),
@@ -235,18 +325,62 @@ class DataTableWidget extends StatefulWidget {
 }
 
 class _DataTableWidgetState extends State<DataTableWidget> {
+  //show dialog for quantity
+  void _showDialog(BuildContext context, String content, bool payment, int id) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        title: Center(
+          child: Text(
+            'Attention',
+            style: TextStyle(color: Theme.of(context).colorScheme.background),
+          ),
+        ),
+        content: Text(content),
+        actions: [
+          ElevatedButton(
+            onPressed: () async {
+              setState(() {
+                payment = true;
+              });
+              //use it to get data from backend
+              try {
+                await Provider.of<OrdersProvider>(context, listen: false)
+                    .updateOrderPayment(id, payment);
+              } catch (error) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(
+                    error.toString(),
+                    textAlign: TextAlign.center,
+                  ),
+                ));
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Yes'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('NO'),
+          )
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context).colorScheme;
     var media = MediaQuery.of(context);
     final orderData = Provider.of<OrdersProvider>(context);
-    final orders = preparing
-        ? orderData.preparingOrders
-        : onGoing
-            ? orderData.onGoingOrders
-            : delivered
-                ? orderData.deliveredOrders
-                : orderData.allOrders;
+    final allOrders = orderData.allOrders;
+    final preparingOrders = orderData.preparingOrders;
+    final onGoingOrders = orderData.onGoingOrders;
+    final deliveredOrders = orderData.deliveredOrders;
+    print('$allOrders');
 
     return DataTable(
       dataRowHeight: media.size.height * 0.1,
@@ -293,52 +427,139 @@ class _DataTableWidgetState extends State<DataTableWidget> {
           tooltip: 'Status of order',
         ),
       ],
-      rows: List<DataRow>.generate(
-        orders.length,
-        (i) {
-          return DataRow(
-            cells: <DataCell>[
-              DataCell(Text(orders[i].id)),
-              DataCell(Text(orders[i].name)),
-              DataCell(Text(orders[i].phoneNumber)),
-              DataCell(Text(orders[i].location)),
-              DataCell(Text(orders[i].date.toString())),
-              DataCell(Text(orders[i].price)),
-              DataCell(TextButton(
-                child: orders[i].isPaid
-                    ? Text(
-                        'Paid',
-                        style:
-                            TextStyle(color: Color.fromARGB(255, 7, 196, 14)),
-                      )
-                    : Text(
-                        'not paid',
-                        style: TextStyle(
-                            color: const Color.fromARGB(255, 245, 20, 4)),
-                      ),
-                onPressed: () {
-                  setState(() {
-                    orders[i].isPaid = true;
-                  });
-                  //use it to get data from backend
-                  //   try {
-                  //     await Provider.of<Order>(context, listen: false)
-                  //         .togglePayStatus();
-                  //   } catch (error) {
-                  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  //       content: Text(
-                  //         'Could not set pay status!',
-                  //         textAlign: TextAlign.center,
-                  //       ),
-                  //     ));
-                  //   }
-                },
-              )),
-              DataCell(DropdownButtonExample()),
-            ],
-          );
-        },
-      ),
+      rows: onGoing
+          ? List<DataRow>.generate(
+              onGoingOrders.length,
+              (i) {
+                return DataRow(
+                  cells: <DataCell>[
+                    DataCell(Text((onGoingOrders[i].id).toString())),
+                    DataCell(Text(onGoingOrders[i].name)),
+                    DataCell(Text(onGoingOrders[i].phoneNumber)),
+                    DataCell(Text(onGoingOrders[i].location)),
+                    DataCell(Text(onGoingOrders[i].date)),
+                    DataCell(Text(onGoingOrders[i].price.toString())),
+                    DataCell(TextButton(
+                      child: onGoingOrders[i].isPaid
+                          ? Text(
+                              'Paid',
+                              style: TextStyle(
+                                  color: Color.fromARGB(255, 7, 196, 14)),
+                            )
+                          : Text(
+                              'not paid',
+                              style: TextStyle(
+                                  color: const Color.fromARGB(255, 245, 20, 4)),
+                            ),
+                      onPressed: () {
+                        if (!onGoingOrders[i].isPaid) {
+                          _showDialog(
+                            context,
+                            'Are you sure you want to change it to paid',
+                            onGoingOrders[i].isPaid,
+                            onGoingOrders[i].id,
+                          );
+                        }
+                      },
+                    )),
+
+                    // DataCell(Text(orders[i].state)),
+
+                    DataCell(DropdownButtonExample(
+                        onGoingOrders[i].state, onGoingOrders[i].id)),
+                  ],
+                );
+              },
+            )
+          : preparing
+              ? List<DataRow>.generate(
+                  preparingOrders.length,
+                  (i) {
+                    return DataRow(
+                      cells: <DataCell>[
+                        DataCell(Text((preparingOrders[i].id).toString())),
+                        DataCell(Text(preparingOrders[i].name)),
+                        DataCell(Text(preparingOrders[i].phoneNumber)),
+                        DataCell(Text(preparingOrders[i].location)),
+                        DataCell(Text(preparingOrders[i].date)),
+                        DataCell(Text(preparingOrders[i].price.toString())),
+                        DataCell(TextButton(
+                          child: preparingOrders[i].isPaid
+                              ? Text(
+                                  'Paid',
+                                  style: TextStyle(
+                                      color: Color.fromARGB(255, 7, 196, 14)),
+                                )
+                              : Text(
+                                  'not paid',
+                                  style: TextStyle(
+                                      color: const Color.fromARGB(
+                                          255, 245, 20, 4)),
+                                ),
+                          onPressed: () {
+                            if (!preparingOrders[i].isPaid) {
+                              _showDialog(
+                                context,
+                                'Are you sure you want to change it to paid',
+                                preparingOrders[i].isPaid,
+                                preparingOrders[i].id,
+                              );
+                            }
+                          },
+                        )),
+
+                        // DataCell(Text(orders[i].state)),
+
+                        DataCell(DropdownButtonExample(
+                            allOrders[i].state, allOrders[i].id)),
+                      ],
+                    );
+                  },
+                )
+              : List<DataRow>.generate(
+                  allOrders.length,
+                  (i) {
+                    return DataRow(
+                      cells: <DataCell>[
+                        DataCell(Text((allOrders[i].id).toString())),
+                        DataCell(Text(allOrders[i].name)),
+                        DataCell(Text(allOrders[i].phoneNumber)),
+                        DataCell(Text(allOrders[i].location)),
+                        DataCell(Text(allOrders[i].date)),
+                        DataCell(Text(allOrders[i].price.toString())),
+                        DataCell(TextButton(
+                          child: allOrders[i].isPaid
+                              ? Text(
+                                  'Paid',
+                                  style: TextStyle(
+                                      color: Color.fromARGB(255, 7, 196, 14)),
+                                )
+                              : Text(
+                                  'not paid',
+                                  style: TextStyle(
+                                      color: const Color.fromARGB(
+                                          255, 245, 20, 4)),
+                                ),
+                          onPressed: () {
+                            if (!allOrders[i].isPaid) {
+                              _showDialog(
+                                  context,
+                                  'Are you sure you want to change it to paid',
+                                  allOrders[i].isPaid,
+                                  allOrders[i].id);
+                            }
+                          },
+                        )),
+
+                        // DataCell(Text(orders[i].state)),
+
+                        DataCell(DropdownButtonExample(
+                            allOrders[i].state, allOrders[i].id)),
+                      ],
+                    );
+                  },
+                ),
     );
+    //print(orders[0].state);
   }
 }
